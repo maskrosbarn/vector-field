@@ -2,7 +2,7 @@ EXECUTABLE_NAME := main
 
 CPP_SOURCE_FILES := \
 	main.cpp \
-	Constants/constants.cpp \
+	lib/mapping/mapping.cpp \
 	Application/Application.cpp \
 	Bivariate/Expression/Expression.cpp \
 	Bivariate/Term/Constant/Constant.cpp \
@@ -22,3 +22,4 @@ all:
 	make cpp
 	make c
 	g++ *.o -o main `sdl2-config --cflags --libs` -lSDL2_ttf
+	rm *.o

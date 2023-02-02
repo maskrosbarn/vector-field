@@ -29,7 +29,7 @@ public:
     }
 
 
-    template <class G> Vector2D<T> operator * (G scalar)
+    Vector2D<T> operator * (T scalar)
     {
         return Vector2D<T>(this->x * scalar, this->y * scalar);
     }

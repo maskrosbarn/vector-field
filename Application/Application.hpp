@@ -5,9 +5,11 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 
-#include "lib/SDL_FontCache/SDL_FontCache.h"
-
 #include "Vector2D.hpp"
+#include "lib/SDL_FontCache/SDL_FontCache.h"
+#include "Bivariate/Bivariate.hpp"
+
+
 
 
 class Application
@@ -50,11 +52,14 @@ private:
 
     FC_Font * font = FC_CreateFont();
 
+    Bivariate::Expression * gradient_expression;
+
     void draw ();
 
     void draw_pointer_coordinates ();
     void draw_plot_area_bounds ();
     void draw_axes ();
+    void draw_vector_field ();
 
     void mouse_button_down (SDL_MouseButtonEvent);
     void mouse_button_up (SDL_MouseButtonEvent);
@@ -64,7 +69,7 @@ private:
     void mouse_wheel_scrolled (SDL_MouseWheelEvent);
 
 public:
-    Application ();
+    Application (Bivariate::Expression *);
     ~Application () = default;
 
     void main_loop ();

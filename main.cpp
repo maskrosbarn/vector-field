@@ -21,7 +21,7 @@ int main (int argc, char const * argv[])
 
     Expression f(terms);
 
-    Application application;
+    Application application(&f);
     application.main_loop();
 
     return 0;
