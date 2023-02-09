@@ -1,25 +1,40 @@
 #include <iostream>
 #include <algorithm>
+#include <math.h>
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 
 #include "Application/Application.hpp"
 #include "Constants.hpp"
+#include "Vector2D/Vector2D.hpp"
 #include "lib/SDL_FontCache/SDL_FontCache.h"
 #include "lib/mapping/mapping.hpp"
-#include "Bivariate/Bivariate.hpp"
 
 
 
 
 void
+Application::initialise ()
+{
+    if (TTF_Init() < 0)
+        throw "[SDL_ttf] failed to initialise";
+
+    SDL_CreateWindowAndRenderer(WINDOW_SIZE, WINDOW_SIZE, 0, &window, &renderer);
+    SDL_SetWindowTitle(window, "Slope Field");
+
+    FC_LoadFont(font, renderer, "Monaco.ttf", 14, FC_MakeColor(0, 0, 0, 255), TTF_STYLE_NORMAL);
+}
+
+
+void
 Application::draw ()
 {
-    draw_pointer_coordinates();
-    draw_plot_area_bounds();
+    ((*this).*draw_method)();
 
     draw_axes();
+    draw_pointer_coordinates();
+    draw_plot_area_bounds();
 
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 }
@@ -82,7 +97,7 @@ Application::draw_plot_area_bounds ()
 void
 Application::draw_axes ()
 {
-    Vector2D<int> axes_position = vector_cartesian_to_graphical(Vector2D<double>(), viewport.origin_cartesian, viewport.range);
+    Vector2D<float> axes_position = vector_cartesian_to_graphical(Vector2D<float>(), viewport.origin_cartesian, viewport.range);
 
     int
         x_axis_position = std::clamp(axes_position.y, AXES_MIN_POSITION, AXES_MAX_POSITION),
@@ -139,20 +154,102 @@ Application::draw_axes ()
 
 
 static void
-draw_gradient_vector (SDL_Renderer * renderer, Vector2D<int> position, double gradient)
+draw_slope_line (SDL_Renderer * renderer, Vector2D<float> position, double gradient)
+{
+    double angle = atan(-gradient);
+
+    SDL_RenderDrawLineF(
+        renderer,
+        position.x + VECTOR_LENGTH_HALF * cos(angle),
+        position.y + VECTOR_LENGTH_HALF * sin(angle),
+        position.x + VECTOR_LENGTH_HALF * -cos(angle),
+        position.y + VECTOR_LENGTH_HALF * -sin(angle)
+    );
+}
+
+
+void
+Application::draw_slope_field ()
+{
+    SDL_SetRenderDrawColor(renderer, 165, 165, 165, 255);
+
+    Vector2D<float> graphical_position, cartesian_position;
+
+    for (int i = 0; i != VECTOR_FIELD_COUNT; i++)
+    {
+        graphical_position = Vector2D(
+            (i % VECTOR_FIELD_DENSITY) * VECTOR_WIDTH + PLOT_AREA_INSET + VECTOR_WIDTH_HALF,
+            (i / VECTOR_FIELD_DENSITY) * VECTOR_WIDTH + PLOT_AREA_INSET + VECTOR_WIDTH_HALF
+        );
+
+        cartesian_position = vector_graphical_to_cartesian(graphical_position, viewport.origin_cartesian, viewport.range);
+
+        draw_slope_line(renderer, graphical_position, gradient_function(cartesian_position));
+    }
+}
+
+
+/*static void
+draw_triangle (SDL_Renderer * renderer, )
 {
     //
+}*/
+
+
+void
+Application::draw_vector (Vector2D<float> graphical_position, Vector2D<float> cartesian_position_vector, Vector2D<BivariateFunction> vector)
+{
+    float positional_magnitude = magnitude(vector, cartesian_position_vector);
+
+    if (positional_magnitude == 0)
+    {
+        return;
+    }
+
+    float magnitude_colour_constant = 1 - 5 / (5 + positional_magnitude);
+
+    Vector2D<float>
+        cartesian_normalised_direction_vector = resolve(vector, cartesian_position_vector) * (1 / positional_magnitude),
+        graphical_normalised_direction_vector = vector_cartesian_to_graphical(
+            cartesian_position_vector + cartesian_normalised_direction_vector,
+            viewport.origin_cartesian,
+            viewport.range
+        ),
+        relative_graphical_normalised_direction_vector = graphical_position + graphical_normalised_direction_vector;
+
+    SDL_SetRenderDrawColor(
+        renderer,
+        55 + 200 * magnitude_colour_constant,
+        0,
+        55 + 200 * (1 - magnitude_colour_constant),
+        255
+    );
+
+    SDL_RenderDrawLineF(
+        renderer,
+        graphical_position.x,
+        graphical_position.y,
+        graphical_normalised_direction_vector.x,
+        graphical_normalised_direction_vector.y
+    );
 }
 
 
 void
 Application::draw_vector_field ()
 {
-    SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
+    Vector2D<float> vector_graphical_position, vector_cartesian_position;
 
-    for (;;)
+    for (int i = 0; i != VECTOR_FIELD_COUNT; i++)
     {
-        //
+        vector_graphical_position = Vector2D(
+            (i % VECTOR_FIELD_DENSITY) * VECTOR_WIDTH + PLOT_AREA_INSET + VECTOR_WIDTH_HALF,
+            (i / VECTOR_FIELD_DENSITY) * VECTOR_WIDTH + PLOT_AREA_INSET + VECTOR_WIDTH_HALF
+        );
+
+        vector_cartesian_position = vector_graphical_to_cartesian(vector_graphical_position, viewport.origin_cartesian, viewport.range);
+
+        draw_vector(vector_graphical_position, vector_cartesian_position, function_vector);
     }
 }
 
@@ -188,7 +285,7 @@ Application::mouse_moved (SDL_MouseMotionEvent event)
 {
     if (mouse.left_button_pressed)
     {
-        Vector2D<double>
+        Vector2D<float>
             relative_mouse_position = vector_graphical_to_cartesian(mouse.position.graphical, viewport.drag_origin_cartesian, viewport.range),
             drag_delta              = mouse.drag_origin_cartesian - relative_mouse_position;
 
@@ -204,15 +301,21 @@ Application::mouse_wheel_scrolled (SDL_MouseWheelEvent event)
 }
 
 
-Application::Application (Bivariate::Expression * gradient_expression):
-    gradient_expression {gradient_expression}
+Application::Application (BivariateFunction gradient_function):
+    gradient_function {gradient_function}
 {
-    if (TTF_Init() < 0)
-        throw "[SDL_ttf] failed to initialise";
+    initialise();
 
-    SDL_CreateWindowAndRenderer(WINDOW_SIZE, WINDOW_SIZE, 0, &window, &renderer);
+    draw_method = &Application::draw_slope_field;
+}
 
-    FC_LoadFont(font, renderer, "Monaco.ttf", 12, FC_MakeColor(0, 0, 0, 255), TTF_STYLE_NORMAL);
+
+Application::Application (Vector2D<BivariateFunction> function_vector):
+    function_vector {function_vector}
+{
+    initialise();
+
+    draw_method = &Application::draw_vector_field;
 }
 
 
@@ -247,7 +350,10 @@ Application::main_loop ()
             }
         }
 
-        SDL_GetMouseState(&mouse.position.graphical.x, &mouse.position.graphical.y);
+        int mouse_x, mouse_y;
+
+        SDL_GetMouseState(&mouse_x, &mouse_y);
+        mouse.position.graphical = Vector2D((float)mouse_x, (float)mouse_y);
 
         mouse.is_inside_plot_area =
             (unsigned)(mouse.position.graphical.x - AXES_MIN_POSITION) <= PLOT_AREA_SIZE &&

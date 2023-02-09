@@ -1,27 +1,23 @@
-#include <vector>
+#include <iostream>
+#include <math.h>
 
 #include <SDL2/SDL.h>
 
-#include "Vector2D.hpp"
-#include "Bivariate/Bivariate.hpp"
+#include "Vector2D/Vector2D.hpp"
 #include "Application/Application.hpp"
+
+
 
 
 int main (int argc, char const * argv[])
 {
-    using Constant   = Bivariate::Term::Constant;
-    using Polynomial = Bivariate::Term::Polynomial;
-    using Expression = Bivariate::Expression;
+    BivariateFunction
+        x = [](Vector2D<float> position) -> float { return position.y; },
+        y = [](Vector2D<float> position) -> float { return -.2 * position.y - (9.8 / 8) * sin(position.x); };
 
-    Polynomial a(1, 2),
-               b(1, 1);
-    Constant   c(1);
+    Vector2D<BivariateFunction> pendulum_equation_vector = Vector2D(x, y);
 
-    Terms terms { &a, &b, &c };
-
-    Expression f(terms);
-
-    Application application(&f);
+    Application application(pendulum_equation_vector);
     application.main_loop();
 
     return 0;

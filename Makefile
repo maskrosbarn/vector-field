@@ -4,9 +4,7 @@ CPP_SOURCE_FILES := \
 	main.cpp \
 	lib/mapping/mapping.cpp \
 	Application/Application.cpp \
-	Bivariate/Expression/Expression.cpp \
-	Bivariate/Term/Constant/Constant.cpp \
-	Bivariate/Term/Polynomial/Polynomial.cpp
+	Vector2D/Vector2D.cpp 
 
 COMPILER_FLAGS := -o $(EXECUTABLE_NAME) -I . `sdl2-config --cflags --libs` -lSDL2_ttf
 
