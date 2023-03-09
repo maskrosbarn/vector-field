@@ -1,23 +1,47 @@
-EXECUTABLE_NAME := main
+EXECUTABLE_NAME := vectorfield
 
 CPP_SOURCE_FILES := \
 	main.cpp \
-	lib/mapping/mapping.cpp \
 	Application/Application.cpp \
-	Vector2D/Vector2D.cpp 
+	Plot/Plot.cpp \
+	ParticleEngine/ParticleEngine.cpp \
+	lib/misc_functions/functions.cpp
 
-COMPILER_FLAGS := -o $(EXECUTABLE_NAME) -I . `sdl2-config --cflags --libs` -lSDL2_ttf
+C_SOURCE_FILES := \
+	Constants/Constants.c \
+	Vector/Vector.c \
+	lib/mapping/mapping.c \
+	lib/SDL_FontCache/SDL_FontCache.c
 
-C_SOURCE_FILES := lib/SDL_FontCache/SDL_FontCache.c
+CPP_FLAGS := \
+	-I . \
+	--std=c++20
+
+C_FLAGS := \
+	-I .
+
+COMPILER_FLAGS := \
+	`sdl2-config --cflags --libs` \
+	-lSDL2_ttf
 
 cpp:
-	g++ -c $(CPP_SOURCE_FILES) --std=c++20 -I .
+	g++ -c $(CPP_SOURCE_FILES) $(CPP_FLAGS)
 
 c:
-	gcc -c $(C_SOURCE_FILES)
+	gcc -c $(C_SOURCE_FILES) $(C_FLAGS)
 
-all:
+build:
 	make cpp
 	make c
-	g++ *.o -o main `sdl2-config --cflags --libs` -lSDL2_ttf
+	g++ *.o -o $(EXECUTABLE_NAME) $(COMPILER_FLAGS)
+	make clean
+
+
+debug:
+	g++ -g -c $(CPP_SOURCE_FILES) $(CPP_FLAGS)
+	gcc -g -c $(C_SOURCE_FILES) $(C_FLAGS)
+	g++ *.o -o $(EXECUTABLE_NAME) $(COMPILER_FLAGS)
+	gdb ./$(EXECUTABLE_NAME)
+
+clean:
 	rm *.o

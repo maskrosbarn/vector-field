@@ -1,90 +1,45 @@
-#ifndef __APPLICATION_H
-#define __APPLICATION_H
-
+#ifndef APPLICATION_H
+#define APPLICATION_H
+//#define GPU_ACCELERATION
 
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
 
-#include "Vector2D/Vector2D.hpp"
-#include "lib/SDL_FontCache/SDL_FontCache.h"
+#ifdef GPU_ACCELERATION
+    #include <OpenCL/opencl.hpp>
+#endif
 
-
+#include "Constants/Constants.h"
+#include "lib/BivariateFunction.h"
+#include "Plot/Plot.hpp"
+#include "ParticleEngine/ParticleEngine.hpp"
 
 
 class Application
 {
 private:
-    SDL_Window * window;
-    SDL_Renderer * renderer;
-
-    SDL_Event window_event;
-
     bool is_running = true;
 
-    struct
-    {
-        struct
-        {
-            Vector2D<float>
-                graphical = Vector2D<float>(),
-                cartesian = Vector2D<float>();
-        } position;
+    SDL_Window * window;
 
-        bool
-            left_button_pressed = false,
-            is_inside_plot_area = false;
+    SDL_Renderer * renderer;
 
-        Vector2D<float> drag_origin_graphical = Vector2D<float>();
+    Plot plot;
 
-        Vector2D<float> drag_origin_cartesian = Vector2D<float>();
-    } mouse;
+    ParticleEngine particle_engine;
 
-    struct
-    {
-        Vector2D<float> position = Vector2D<float>();
+    void main ();
 
-        Vector2D<float>
-            origin_cartesian      = Vector2D<float>(),
-            drag_origin_cartesian = Vector2D<float>();
-
-        int range = 1;
-    } viewport;
-
-    FC_Font * font = FC_CreateFont();
-
-    BivariateFunction gradient_function;
-    Vector2D<BivariateFunction> function_vector;
-
-    void (Application:: * draw_method)();
-
-
-    void initialise ();
-
-    void draw ();
-
-    void draw_pointer_coordinates ();
-    void draw_plot_area_bounds ();
-    void draw_axes ();
-    void draw_slope_field ();
-
-    void draw_vector (Vector2D<float> graphical_position, Vector2D<float> cartesian_position, Vector2D<BivariateFunction> vector);
-    void draw_vector_field();
-
-    void mouse_button_down (SDL_MouseButtonEvent);
-    void mouse_button_up (SDL_MouseButtonEvent);
+    void did_receive_event (SDL_Event);
 
     void mouse_moved (SDL_MouseMotionEvent);
-
-    void mouse_wheel_scrolled (SDL_MouseWheelEvent);
+    void mouse_button_down (SDL_MouseButtonEvent);
+    void mouse_button_up (SDL_MouseButtonEvent);
+    void mouse_wheel (SDL_MouseWheelEvent);
 
 public:
-    Application ();
-    Application (BivariateFunction);
-    Application (Vector2D<BivariateFunction>);
+    Application (BivariateFunction, BivariateFunction);
 
-    ~Application () = default;
-
-    void main_loop ();
+    ~Application ();
 };
 
 

@@ -1,24 +1,24 @@
+#include <stdlib.h>
+//
 #include <iostream>
-#include <math.h>
 
-#include <SDL2/SDL.h>
-
-#include "Vector2D/Vector2D.hpp"
 #include "Application/Application.hpp"
-
-
+#include "Constants/Constants.h"
+#include "lib/BivariateFunction.h"
+#include "lib/misc_functions/functions.hpp"
 
 
 int main (int argc, char const * argv[])
 {
+    srand(time(nullptr));
+
+    system("clear");
+    
     BivariateFunction
-        x = [](Vector2D<float> position) -> float { return position.y; },
-        y = [](Vector2D<float> position) -> float { return -.2 * position.y - (9.8 / 8) * sin(position.x); };
+        x = [](Vector position) -> FLOAT_TYPE { return position.y; },
+        y = [](Vector position) -> FLOAT_TYPE { return -.2 * position.y - (9.8 / 8) * sin(position.x); };
 
-    Vector2D<BivariateFunction> pendulum_equation_vector = Vector2D(x, y);
-
-    Application application(pendulum_equation_vector);
-    application.main_loop();
+    Application application(x, y);
 
     return 0;
 }
