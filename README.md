@@ -1,6 +1,6 @@
 # vector-field
 
-!()[https://github.com/maskrosbarn/vector-field/blob/main/demo.gif?raw=true]
+![](https://github.com/maskrosbarn/vector-field/blob/main/demo.gif?raw=true)
 
 Given a vector:
 
