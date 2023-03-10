@@ -58,14 +58,8 @@ public:
             cartesian_drag_origin = { 0, 0 };
 
         Vector
-            axes_maximum = {
-                cartesian_origin.x + .5f,
-                cartesian_origin.y + .5f
-            },
-            axes_minimum = {
-                cartesian_origin.x - .5f,
-                cartesian_origin.y - .5f
-            };
+            axes_maximum = { .5f, .5f },
+            axes_minimum = { -.5f, -.5f };
 
         int range = 1;
     } viewport;

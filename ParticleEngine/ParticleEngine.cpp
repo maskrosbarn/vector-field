@@ -48,8 +48,6 @@ ParticleEngine::update ()
             properties[STATE] = NEW;
             
             next_position = get_new_position();
-
-            //std::cout << "1" << '\n';
         }
         else
         {
@@ -82,7 +80,7 @@ ParticleEngine::update ()
         //printf("%d %.3f %.3f\n", properties[STATE] < .001 ? 0 : 1, properties[POSITION_X], properties[POSITION_Y]);
     }
 
-    printf("\x1B[%iA", PARTICLE_COUNT);
+    //printf("\x1B[%iA", PARTICLE_COUNT);
 }
 
 

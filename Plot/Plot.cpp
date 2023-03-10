@@ -20,7 +20,7 @@ Plot::update ()
         viewport.range
     );
 
-    mouse.is_inside_plot_area = is_inside_plot_area(mouse.position.graphical);
+    mouse.is_inside_plot_area = Plot::is_inside_plot_area(mouse.position.graphical);
 
     Vector axes_position = cartesian_to_graphical({ 0, 0 });
 
@@ -29,7 +29,7 @@ Plot::update ()
         std::clamp(axes_position.x, AXES_MIN_POSITION, AXES_MAX_POSITION)
     };
 
-    float half_viewport_range = viewport.range / 2;
+    float half_viewport_range = viewport.range / 2.f;
 
     viewport.axes_maximum = {
         viewport.cartesian_origin.x + half_viewport_range,
@@ -263,14 +263,6 @@ Plot::draw_pointer_coordinates () const
 void
 Plot::draw_vector_field () const
 {
-    SDL_SetRenderDrawColor(
-        renderer,
-        FOREGROUND_COLOUR.r,
-        FOREGROUND_COLOUR.g,
-        FOREGROUND_COLOUR.b,
-        FOREGROUND_COLOUR.a
-    );
-
     for (size_t i, j = 0; j < VECTOR_ROW_COUNT; j++)
     {
         for (i = 0; i < VECTOR_COLUMN_COUNT; i++)
@@ -353,14 +345,15 @@ Plot::Plot
 void
 Plot::draw () const
 {
-    draw_plot_bounds();
+    draw_vector_field();
+    
     draw_axes();
     draw_axes_labels();
 
     if (mouse.is_inside_plot_area)
         draw_pointer_coordinates();
 
-    draw_vector_field();
+    draw_plot_bounds();
 }
 
 
@@ -402,9 +395,9 @@ Plot::fixed_graphical_length_from_cartesian
 
 
 static bool
-is_in_range (int value, int minimum, int maximum)
+is_in_range (float value, float minimum, float maximum)
 {
-    return (unsigned)(value - minimum) <= (maximum + minimum);
+    return value >= minimum && value <= maximum;
 }
 
 
@@ -420,7 +413,7 @@ Plot::is_inside_plot_area (Vector vector)
 bool
 Plot::is_inside_viewport_area (Vector vector) const
 {
-    float half_range = .5 * viewport.range;
+    float half_range = .5f * viewport.range;
 
     return
         is_in_range(vector.x, viewport.axes_minimum.x, viewport.axes_maximum.x) &&

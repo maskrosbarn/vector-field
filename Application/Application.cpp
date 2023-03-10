@@ -146,20 +146,13 @@ create_window ()
 
 
 static SDL_Renderer *
-create_renderer
-(
-    SDL_Window * window
-)
+create_renderer (SDL_Window * window)
 {
     return SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 }
 
 
-Application::Application
-(
-    BivariateFunction x,
-    BivariateFunction y
-):
+Application::Application (BivariateFunction x, BivariateFunction y):
     window   { create_window() },
     renderer { create_renderer(window) },
     plot (renderer, x, y),

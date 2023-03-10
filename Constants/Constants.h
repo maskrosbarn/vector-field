@@ -66,7 +66,7 @@ enum Vector_Properties
 #define PARTICLE_SIZE 4.f
 extern const FLOAT_TYPE PARTICLE_SIZE_HALF;
 
-#define PARTICLE_COUNT 2500
+#define PARTICLE_COUNT 3000
 
 enum Particle_Properties
 {
